@@ -8,6 +8,7 @@ import { CallerReq } from "../middleware/auth";
 import { ensureOrgManage } from "../auth/rbac";
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { handleUniqueViolation } from "../utils/dbErrors";
 
 const router = Router({ mergeParams: true });
 
@@ -24,7 +25,13 @@ router.post("/orgs/:orgId/invites", auditMiddleware("invite.create", "invite"), 
   if (!role) { res.status(400).json(makeError("INVALID_ROLE", "Role not found in org")); return; }
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
-  const [invite] = await db.insert(invites).values({ orgId, teamId: teamId ?? null, email, token, roleId: role.id, expiresAt }).onConflictDoNothing().returning();
+  let invite;
+  try {
+    [invite] = await db.insert(invites).values({ orgId, teamId: teamId ?? null, email, token, roleId: role.id, expiresAt }).returning();
+  } catch (e) {
+    if (handleUniqueViolation(res, e, "An invite already exists for this email/team")) { return; }
+    throw e;
+  }
   await writeAudit({ orgId, actorUserId: req.caller.userId, action: "invite.create", entityType: "invite", entityId: invite?.id ?? null, ip: req.ip, userAgent: req.headers["user-agent"] as string });
   res.status(201).json(invite ?? { ok: true });
   return;
@@ -41,7 +48,12 @@ router.post("/invites/:token/accept", auditMiddleware("invite.accept", "invite")
   // Ensure a user exists for the invited email; create if missing
   let [user] = await db.select().from(users).where(eq(users.email, inv.email));
   if (!user) {
-    [user] = await db.insert(users).values({ email: inv.email }).returning();
+    try {
+      [user] = await db.insert(users).values({ email: inv.email }).returning();
+    } catch (e) {
+      if (handleUniqueViolation(res, e, "A user already exists with this email")) { return; }
+      throw e;
+    }
   }
 
   // idempotent org membership for the created/found user

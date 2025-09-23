@@ -7,6 +7,7 @@ import { auditMiddleware, writeAudit } from "../middleware/audit";
 import { CallerReq } from "../middleware/auth";
 import { ensureOrgManage, ensureReadInOrg } from "../auth/rbac";
 import { and, eq } from "drizzle-orm";
+import { handleUniqueViolation } from "../utils/dbErrors";
 
 const router = Router({ mergeParams: true });
 
@@ -18,7 +19,13 @@ router.post("/orgs/:orgId/teams", auditMiddleware("team.create", "team"), async 
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) { res.status(400).json(makeError("BAD_REQUEST", "Invalid body", parsed.error.flatten())); return; }
   const { name, slug } = parsed.data;
-  const [team] = await db.insert(teams).values({ name, slug, orgId }).returning();
+  let team;
+  try {
+    [team] = await db.insert(teams).values({ name, slug, orgId }).returning();
+  } catch (e) {
+    if (handleUniqueViolation(res, e, "Team slug already exists in this org")) { return; }
+    throw e;
+  }
   await writeAudit({ orgId, actorUserId: req.caller.userId, action: "team.create", entityType: "team", entityId: team.id, ip: req.ip, userAgent: req.headers["user-agent"] as string });
   res.status(201).json(team);
   return;

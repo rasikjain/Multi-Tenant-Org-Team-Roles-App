@@ -6,6 +6,7 @@ import { makeError } from "../types/errors";
 import { auditMiddleware, writeAudit } from "../middleware/audit";
 import { CallerReq } from "../middleware/auth";
 import { and, eq } from "drizzle-orm";
+import { handleUniqueViolation } from "../utils/dbErrors";
 
 const router = Router();
 
@@ -15,7 +16,13 @@ router.post("/orgs", auditMiddleware("org.create", "organization"), async (req: 
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) { res.status(400).json(makeError("BAD_REQUEST", "Invalid body", parsed.error.flatten())); return; }
   const { name, slug, creatorEmail, creatorName } = parsed.data;
-  const [org] = await db.insert(organizations).values({ name, slug }).returning();
+  let org;
+  try {
+    [org] = await db.insert(organizations).values({ name, slug }).returning();
+  } catch (e) {
+    if (handleUniqueViolation(res, e, "Organization slug already exists")) { return; }
+    throw e;
+  }
   let [creator] = await db.select().from(users).where(eq(users.email, creatorEmail));
   if (!creator) {
     [creator] = await db.insert(users).values({ email: creatorEmail, name: creatorName ?? null }).returning();
