@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: Multi-Tenant Org API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    HeaderUser:
+      type: apiKey
+      in: header
+      name: x-user-id
+    HeaderOrg:
+      type: apiKey
+      in: header
+      name: x-org-id
+security:
+  - HeaderUser: []
+    HeaderOrg: []
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /orgs:
+    post:
+      summary: Create organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug, creatorEmail]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                creatorEmail: { type: string, format: email }
+                creatorName: { type: string }
+      responses:
+        '201': { description: Created }
+        '400': { description: Bad Request }
+  /orgs/{orgId}/teams:
+    post:
+      summary: Create team in org
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+      responses:
+        '201': { description: Created }
+        '403': { description: Forbidden }
+    get:
+      summary: List teams in org
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: OK }
+        '403': { description: Forbidden }
+  /orgs/{orgId}/invites:
+    post:
+      summary: Create invite
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, roleName]
+              properties:
+                email: { type: string, format: email }
+                roleName: { type: string, enum: [OrgAdmin, TeamManager, Member, Auditor] }
+                teamId: { type: string, format: uuid }
+                expiresInHours: { type: integer }
+      responses:
+        '201': { description: Created }
+        '403': { description: Forbidden }
+  /invites/{token}/accept:
+    post:
+      summary: Accept invite by token
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '400': { description: Bad Request }
+        '404': { description: Not Found }
+  /orgs/{orgId}/members/{userId}/role:
+    post:
+      summary: Change org-level role for user
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roleName]
+              properties:
+                roleName: { type: string, enum: [OrgAdmin, TeamManager, Member, Auditor] }
+      responses:
+        '200': { description: OK }
+        '403': { description: Forbidden }
+  /orgs/{orgId}/members:
+    get:
+      summary: List org members
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: OK }
+        '403': { description: Forbidden }
+

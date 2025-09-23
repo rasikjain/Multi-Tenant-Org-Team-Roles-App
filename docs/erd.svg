@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="100%" height="100%" fill="#0b1021"/>
+  <g fill="#e6edf3" font-family="monospace" font-size="12">
+    <text x="20" y="30">organizations(id, name, slug, created_at, updated_at, deleted_at)</text>
+    <text x="20" y="55">users(id, email, name, created_at, updated_at)</text>
+    <text x="20" y="80">teams(id, org_id→organizations.id, name, slug, created_at, updated_at, deleted_at)</text>
+    <text x="20" y="105">role_types(id, org_id→organizations.id|null, name, can_org_manage, can_team_manage, can_team_write, can_read_all)</text>
+    <text x="20" y="130">memberships(id, org_id→organizations.id, user_id→users.id, role_id→role_types.id)</text>
+    <text x="20" y="155">team_memberships(id, org_id→organizations.id, team_id→teams.id, user_id→users.id, role_id→role_types.id)</text>
+    <text x="20" y="180">invites(id, org_id→organizations.id, team_id→teams.id?, email, token, role_id→role_types.id, expires_at, accepted_at)</text>
+    <text x="20" y="205">audit_events(id, org_id?, actor_user_id?, action, entity_type, entity_id, ip, user_agent, metadata, created_at)</text>
+  </g>
+</svg>
+

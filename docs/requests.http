@@ -1,0 +1,57 @@
+### Health
+GET http://localhost:3000/health
+
+### 1. Create Acme, create Partnerships team
+POST http://localhost:3000/orgs
+Content-Type: application/json
+x-user-id: {{alice}}
+x-org-id: {{acme}}
+
+{
+  "name": "Acme",
+  "slug": "acme",
+  "creatorEmail": "alice@example.com",
+  "creatorName": "Alice"
+}
+
+### Create Partnerships team
+POST http://localhost:3000/orgs/{{acme}}/teams
+Content-Type: application/json
+x-user-id: {{alice}}
+x-org-id: {{acme}}
+
+{
+  "name": "Partnerships",
+  "slug": "partnerships"
+}
+
+### 2. Invite Bob to Acme/Partnerships as Member
+POST http://localhost:3000/orgs/{{acme}}/invites
+Content-Type: application/json
+x-user-id: {{alice}}
+x-org-id: {{acme}}
+
+{
+  "email": "bob@example.com",
+  "roleName": "Member",
+  "teamId": "{{acmePartnerships}}"
+}
+
+### Accept invite via token
+POST http://localhost:3000/invites/{{inviteToken}}/accept
+Content-Type: application/json
+x-user-id: {{bob}}
+x-org-id: {{acme}}
+
+### 3. List members by org
+GET http://localhost:3000/orgs/{{acme}}/members?limit=10&offset=0
+Content-Type: application/json
+x-user-id: {{alice}}
+x-org-id: {{acme}}
+
+### 4. Attempt cross-org access → verify 403
+GET http://localhost:3000/orgs/{{globex}}/teams
+Content-Type: application/json
+x-user-id: {{alice}}
+x-org-id: {{acme}}
+
