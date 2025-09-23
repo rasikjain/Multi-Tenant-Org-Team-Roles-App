@@ -5,7 +5,6 @@ GET http://localhost:3000/health
 POST http://localhost:3000/orgs
 Content-Type: application/json
 x-user-id: {{alice}}
-x-org-id: {{acme}}
 
 {
   "name": "Acme",
@@ -15,10 +14,9 @@ x-org-id: {{acme}}
 }
 
 ### Create Partnerships team
-POST http://localhost:3000/orgs/{{acme}}/teams
+POST http://localhost:3000/orgs/{{acmeId}}/teams
 Content-Type: application/json
 x-user-id: {{alice}}
-x-org-id: {{acme}}
 
 {
   "name": "Partnerships",
@@ -26,32 +24,36 @@ x-org-id: {{acme}}
 }
 
 ### 2. Invite Bob to Acme/Partnerships as Member
-POST http://localhost:3000/orgs/{{acme}}/invites
+POST http://localhost:3000/orgs/{{acmeId}}/invites
 Content-Type: application/json
 x-user-id: {{alice}}
-x-org-id: {{acme}}
 
 {
   "email": "bob@example.com",
   "roleName": "Member",
-  "teamId": "{{acmePartnerships}}"
+  "teamId": "{{acmePartnershipsId}}"
 }
 
 ### Accept invite via token
 POST http://localhost:3000/invites/{{inviteToken}}/accept
 Content-Type: application/json
 x-user-id: {{bob}}
-x-org-id: {{acme}}
 
 ### 3. List members by org
-GET http://localhost:3000/orgs/{{acme}}/members?limit=10&offset=0
+GET http://localhost:3000/orgs/{{acmeId}}/members?limit=10&offset=0
 Content-Type: application/json
 x-user-id: {{alice}}
-x-org-id: {{acme}}
 
 ### 4. Attempt cross-org access → verify 403
-GET http://localhost:3000/orgs/{{globex}}/teams
+GET http://localhost:3000/orgs/{{globexId}}/teams
 Content-Type: application/json
 x-user-id: {{alice}}
-x-org-id: {{acme}}
+
+### Variable hints (set in your client):
+# {{alice}}           -> userId of Alice from DB
+# {{bob}}             -> userId of Bob from DB
+# {{acmeId}}          -> organization id for Acme
+# {{globexId}}        -> organization id for Globex
+# {{acmePartnershipsId}} -> team id for Acme/Partnerships
+# {{inviteToken}}     -> token printed by seed for Eve (or returned by invite create)
 

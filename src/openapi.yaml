@@ -10,13 +10,8 @@ components:
       type: apiKey
       in: header
       name: x-user-id
-    HeaderOrg:
-      type: apiKey
-      in: header
-      name: x-org-id
 security:
   - HeaderUser: []
-    HeaderOrg: []
 paths:
   /health:
     get:

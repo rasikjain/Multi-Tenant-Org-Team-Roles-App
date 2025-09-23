@@ -14,8 +14,6 @@ const router = Router({ mergeParams: true });
 router.post("/orgs/:orgId/members/:userId/role", auditMiddleware("org.role.change", "membership"), async (req: CallerReq, res) => {
   const orgId = req.params.orgId;
   const userId = req.params.userId;
-
-  if (orgId !== req.caller.orgId) { res.status(403).json(makeError("FORBIDDEN", "Cross-org access denied")); return; }
   try {
     await ensureOrgManage(req.caller);
   }
@@ -37,11 +35,6 @@ router.post("/orgs/:orgId/members/:userId/role", auditMiddleware("org.role.chang
 // GET /orgs/:orgId/members → list members with roles (paginated)
 router.get("/orgs/:orgId/members", async (req: CallerReq, res) => {
   const orgId = req.params.orgId;
-  console.log('-------B-----')
-  console.log(orgId)
-  console.log(req.caller.orgId)
-  console.log('-------E-----')
-  if (orgId !== req.caller.orgId) { res.status(403).json(makeError("FORBIDDEN", "Cross-org access denied")); return; }
   try { await ensureReadInOrg(req.caller); } catch { res.status(403).json(makeError("FORBIDDEN", "Read not permitted")); return; }
   const limit = Math.min(parseInt(String(req.query.limit ?? "20"), 10) || 20, 100);
   const offset = parseInt(String(req.query.offset ?? "0"), 10) || 0;

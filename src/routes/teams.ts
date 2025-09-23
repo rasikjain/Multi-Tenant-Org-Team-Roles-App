@@ -13,7 +13,6 @@ const router = Router({ mergeParams: true });
 // POST /orgs/:orgId/teams → create team in org
 router.post("/orgs/:orgId/teams", auditMiddleware("team.create", "team"), async (req: CallerReq, res) => {
   const orgId = req.params.orgId;
-  if (orgId !== req.caller.orgId) { res.status(403).json(makeError("FORBIDDEN", "Cross-org access denied")); return; }
   try { await ensureOrgManage(req.caller); } catch { res.status(403).json(makeError("FORBIDDEN", "Missing org:manage")); return; }
   const Body = z.object({ name: z.string().min(1), slug: z.string().min(1) });
   const parsed = Body.safeParse(req.body);
@@ -28,7 +27,6 @@ router.post("/orgs/:orgId/teams", auditMiddleware("team.create", "team"), async 
 // GET /orgs/:orgId/teams → list teams (paginated)
 router.get("/orgs/:orgId/teams", async (req: CallerReq, res) => {
   const orgId = req.params.orgId;
-  if (orgId !== req.caller.orgId) { res.status(403).json(makeError("FORBIDDEN", "Cross-org access denied")); return; }
   try { await ensureReadInOrg(req.caller); } catch { res.status(403).json(makeError("FORBIDDEN", "Read not permitted")); return; }
   const limit = Math.min(parseInt(String(req.query.limit ?? "20"), 10) || 20, 100);
   const offset = parseInt(String(req.query.offset ?? "0"), 10) || 0;
