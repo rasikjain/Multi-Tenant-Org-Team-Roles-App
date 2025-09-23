@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "Multi-Tenant Org API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.1.0"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "alice", "value": "" },
+    { "key": "bob", "value": "" },
+    { "key": "acmeId", "value": "" },
+    { "key": "globexId", "value": "" },
+    { "key": "acmePartnershipsId", "value": "" },
+    { "key": "inviteToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+      }
+    },
+    {
+      "name": "Create Org (Acme)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs", "host": ["{{baseUrl}}"], "path": ["orgs"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme\",\n  \"slug\": \"acme\",\n  \"creatorEmail\": \"alice@example.com\",\n  \"creatorName\": \"Alice\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Team (Acme/Partnerships)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs/{{acmeId}}/teams", "host": ["{{baseUrl}}"], "path": ["orgs","{{acmeId}}","teams"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Partnerships\",\n  \"slug\": \"partnerships\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List Teams (Acme)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs/{{acmeId}}/teams?limit=20&offset=0", "host": ["{{baseUrl}}"], "path": ["orgs","{{acmeId}}","teams"], "query": [ {"key": "limit", "value": "20"}, {"key": "offset", "value": "0"} ] }
+      }
+    },
+    {
+      "name": "Create Invite (Bob -> Acme/Partnerships)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs/{{acmeId}}/invites", "host": ["{{baseUrl}}"], "path": ["orgs","{{acmeId}}","invites"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"bob@example.com\",\n  \"roleName\": \"Member\",\n  \"teamId\": \"{{acmePartnershipsId}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Accept Invite (by token as Bob)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "x-user-id", "value": "{{bob}}" } ],
+        "url": { "raw": "{{baseUrl}}/invites/{{inviteToken}}/accept", "host": ["{{baseUrl}}"], "path": ["invites","{{inviteToken}}","accept"] }
+      }
+    },
+    {
+      "name": "List Members (Acme)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs/{{acmeId}}/members?limit=10&offset=0", "host": ["{{baseUrl}}"], "path": ["orgs","{{acmeId}}","members"], "query": [ {"key": "limit", "value": "10"}, {"key": "offset", "value": "0"} ] }
+      }
+    },
+    {
+      "name": "Change Org Role (userId)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs/{{acmeId}}/members/{{userId}}/role", "host": ["{{baseUrl}}"], "path": ["orgs","{{acmeId}}","members","{{userId}}","role"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roleName\": \"TeamManager\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Cross-Org Access (should 403)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-user-id", "value": "{{alice}}" } ],
+        "url": { "raw": "{{baseUrl}}/orgs/{{globexId}}/teams", "host": ["{{baseUrl}}"], "path": ["orgs","{{globexId}}","teams"] }
+      }
+    }
+  ]
+}
+
