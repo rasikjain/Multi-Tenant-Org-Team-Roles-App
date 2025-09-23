@@ -20,7 +20,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // Swagger UI from OpenAPI YAML
-const openapiPath = resolve(process.cwd(), "src", "openapi.yaml");
+const openapiPath = resolve(process.cwd(), "docs", "openapi.yaml");
 const openapiDoc = YAML.parse(readFileSync(openapiPath, "utf8"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDoc));
 

@@ -1,0 +1,98 @@
+%% Mermaid ER diagram based on Drizzle schema
+erDiagram
+  organizations {
+    uuid id
+    string name
+    string slug
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
+  }
+
+  users {
+    uuid id
+    string email
+    string name
+    datetime created_at
+    datetime updated_at
+  }
+
+  role_types {
+    uuid id
+    uuid org_id
+    string name
+    boolean can_org_manage
+    boolean can_team_manage
+    boolean can_team_write
+    boolean can_read_all
+  }
+
+  teams {
+    uuid id
+    uuid org_id
+    string name
+    string slug
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
+  }
+
+  memberships {
+    uuid id
+    uuid org_id
+    uuid user_id
+    uuid role_id
+    datetime created_at
+    datetime updated_at
+  }
+
+  team_memberships {
+    uuid id
+    uuid org_id
+    uuid team_id
+    uuid user_id
+    uuid role_id
+    datetime created_at
+    datetime updated_at
+  }
+
+  invites {
+    uuid id
+    uuid org_id
+    uuid team_id
+    string email
+    string token
+    uuid role_id
+    datetime expires_at
+    datetime accepted_at
+    datetime created_at
+  }
+
+  audit_events {
+    uuid id
+    uuid org_id
+    uuid actor_user_id
+    string action
+    string entity_type
+    string entity_id
+    string ip
+    string user_agent
+    string metadata
+    datetime created_at
+  }
+
+  organizations ||--o{ teams : contains
+  organizations ||--o{ memberships : has
+  organizations ||--o{ role_types : defines
+  users ||--o{ memberships : has
+  role_types ||--o{ memberships : grants
+  organizations ||--o{ team_memberships : has
+  teams ||--o{ team_memberships : includes
+  users ||--o{ team_memberships : has
+  role_types ||--o{ team_memberships : grants
+  organizations ||--o{ invites : has
+  teams ||--o{ invites : optional_for
+  role_types ||--o{ invites : assigned
+  organizations ||--o{ audit_events : logs
+  users ||--o{ audit_events : acts
+
