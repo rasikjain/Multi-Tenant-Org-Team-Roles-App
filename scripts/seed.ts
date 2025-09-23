@@ -4,6 +4,10 @@ import { organizations, teams, users, roleTypes, memberships, invites, teamMembe
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
+// Seed initial data for testing and development
+// Run with `ts-node scripts/seed.ts`
+
+// Ensure standard roles exist for the org, return the requested one
 async function ensureRole(orgId: string, name: "OrgAdmin" | "TeamManager" | "Member" | "Auditor") {
   const caps = {
     OrgAdmin: { canOrgManage: true, canTeamManage: true, canTeamWrite: true, canReadAll: true },
@@ -18,8 +22,10 @@ async function ensureRole(orgId: string, name: "OrgAdmin" | "TeamManager" | "Mem
   return role;
 }
 
+// Main seeding function
 async function main() {
   console.log("Seeding data...");
+  
   // Orgs
   const [acme] = await db.insert(organizations).values({ name: "Acme", slug: "acme" }).onConflictDoNothing().returning();
   const acmeId = acme?.id ?? (await db.select().from(organizations).where(eq(organizations.slug, "acme")))[0].id;

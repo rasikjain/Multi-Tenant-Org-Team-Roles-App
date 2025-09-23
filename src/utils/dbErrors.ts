@@ -6,6 +6,7 @@ function getPgCode(error: unknown): string | undefined {
   return e?.code || e?.cause?.code || e?.originalError?.code;
 }
 
+// Handle unique violation (23505) errors from Postgres
 export function handleUniqueViolation(res: Response, error: unknown, message: string): boolean {
   const code = getPgCode(error);
   if (code === "23505") {

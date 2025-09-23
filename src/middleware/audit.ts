@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { db } from "../db/client";
 import { auditEvents } from "../db/schema";
 
+//Write Audit Log Entry
 export async function writeAudit(opts: {
   orgId?: string | null;
   actorUserId?: string | null;
@@ -24,6 +25,7 @@ export async function writeAudit(opts: {
   });
 }
 
+// Middleware to attach audit info to request
 export function auditMiddleware(action: string, entityType?: string) {
   return async (req: Request, _res: Response, next: NextFunction) => {
     (req as any)._audit = { action, entityType };
