@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 
 export const roleNameEnum = pgEnum("role_name", ["OrgAdmin", "TeamManager", "Member", "Auditor"]);
 
+// Tables
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
