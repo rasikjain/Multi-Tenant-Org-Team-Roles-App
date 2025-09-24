@@ -39,6 +39,8 @@ Alternatively, you can run the provided initial SQL in `drizzle/` directly.
 - `drizzle:push`: apply schema to the database
 - `drizzle:migrate`: run migrations (if using generated migrations)
 - `seed`: seed database with scenario
+- `test`: run vitest test cases
+- `test-coverage`: run vitest test cases with coverage
 
 ### Run the API Server
 
