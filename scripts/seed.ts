@@ -9,16 +9,20 @@ import { randomUUID } from "crypto";
 
 // Ensure standard roles exist for the org, return the requested one
 async function ensureRole(orgId: string, name: "OrgAdmin" | "TeamManager" | "Member" | "Auditor") {
+
   const caps = {
     OrgAdmin: { canOrgManage: true, canTeamManage: true, canTeamWrite: true, canReadAll: true },
     TeamManager: { canOrgManage: false, canTeamManage: true, canTeamWrite: true, canReadAll: true },
     Member: { canOrgManage: false, canTeamManage: false, canTeamWrite: true, canReadAll: true },
     Auditor: { canOrgManage: false, canTeamManage: false, canTeamWrite: false, canReadAll: true },
   }[name];
+
   let [role] = await db.select().from(roleTypes).where(and(eq(roleTypes.orgId, orgId), eq(roleTypes.name, name)));
+
   if (!role) {
     [role] = await db.insert(roleTypes).values({ orgId, name, ...caps }).returning();
   }
+
   return role;
 }
 
@@ -37,6 +41,7 @@ async function main() {
   const acmeSalesId = acmeSales?.id ?? (await db.select().from(teams).where(and(eq(teams.orgId, acmeId), eq(teams.slug, "sales"))))[0].id;
   const [acmePartnerships] = await db.insert(teams).values({ orgId: acmeId, name: "Partnerships", slug: "partnerships" }).onConflictDoNothing().returning();
   const acmePartnershipsId = acmePartnerships?.id ?? (await db.select().from(teams).where(and(eq(teams.orgId, acmeId), eq(teams.slug, "partnerships"))))[0].id;
+  
   await db.insert(teams).values({ orgId: globexId, name: "CS", slug: "cs" }).onConflictDoNothing();
   await db.insert(teams).values({ orgId: globexId, name: "Ops", slug: "ops" }).onConflictDoNothing();
 
@@ -47,7 +52,9 @@ async function main() {
     { email: "carol@example.com", name: "Carol" },
     { email: "dan@example.com", name: "Dan" },
   ];
+  
   for (const u of usersSeed) await db.insert(users).values(u).onConflictDoNothing();
+  
   const byEmail = async (email: string) => (await db.select().from(users).where(eq(users.email, email)))[0];
   const alice = await byEmail("alice@example.com");
   const bob = await byEmail("bob@example.com");
@@ -73,6 +80,7 @@ async function main() {
 
   // Pending invite for eve@example.com to Acme/Sales (Member)
   const token = randomUUID();
+  
   await db.insert(invites).values({ orgId: acmeId, teamId: acmeSalesId, email: "eve@example.com", token, roleId: acmeMember.id, expiresAt: new Date(Date.now() + 72 * 3600 * 1000) }).onConflictDoNothing();
   console.log("Pending invite token for Eve:", token);
 

@@ -13,6 +13,7 @@ export async function writeAudit(opts: {
   userAgent?: string | null;
   metadata?: string | null;
 }) {
+  
   await db.insert(auditEvents).values({
     orgId: opts.orgId ?? null,
     actorUserId: opts.actorUserId ?? null,
