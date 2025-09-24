@@ -70,3 +70,33 @@ You can also use `docs/requests.http` for quick requests in compatible editors.
 - OpenAPI: `docs/openapi.yaml`
 - ER Diagram (Mermaid): `docs/erd.mmd`
 - Architecture notes: `docs/architecture.md` (summary of rationale, RBAC, privacy, idempotency, scaling, rollout)
+
+## Testing
+
+The project uses Vitest for unit testing. Test files follow the naming pattern `*.test.ts`.
+
+### Test Coverage
+
+- **Authentication Middleware** (`auth.test.ts`)
+  - User authentication via headers
+  - Organization scope validation
+  - Cross-org access prevention
+
+- **RBAC** (`rbac.test.ts`)
+  - Permission aggregation
+  - Organization management authorization
+  - Team management validation
+  - Read access control
+
+- **Database Errors** (`dbErrors.test.ts`)
+  - Unique constraint violation handling
+
+### Running Tests
+
+```bash
+# Run all tests
+npm run test
+
+# Run with coverage
+npm run test-coverage
+```
