@@ -33,6 +33,7 @@ export async function getOrgPermissions(caller: Caller): Promise<Permissions> {
     canTeamWrite: acc.canTeamWrite || r.canTeamWrite,
     canReadAll: acc.canReadAll || r.canReadAll,
   }), { canOrgManage: false, canTeamManage: false, canTeamWrite: false, canReadAll: false });
+  
   return agg;
 }
 

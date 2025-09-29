@@ -33,12 +33,14 @@ async function main() {
   // Orgs
   const [acme] = await db.insert(organizations).values({ name: "Acme", slug: "acme" }).onConflictDoNothing().returning();
   const acmeId = acme?.id ?? (await db.select().from(organizations).where(eq(organizations.slug, "acme")))[0].id;
+
   const [globex] = await db.insert(organizations).values({ name: "Globex", slug: "globex" }).onConflictDoNothing().returning();
   const globexId = globex?.id ?? (await db.select().from(organizations).where(eq(organizations.slug, "globex")))[0].id;
 
   // Teams
   const [acmeSales] = await db.insert(teams).values({ orgId: acmeId, name: "Sales", slug: "sales" }).onConflictDoNothing().returning();
   const acmeSalesId = acmeSales?.id ?? (await db.select().from(teams).where(and(eq(teams.orgId, acmeId), eq(teams.slug, "sales"))))[0].id;
+  
   const [acmePartnerships] = await db.insert(teams).values({ orgId: acmeId, name: "Partnerships", slug: "partnerships" }).onConflictDoNothing().returning();
   const acmePartnershipsId = acmePartnerships?.id ?? (await db.select().from(teams).where(and(eq(teams.orgId, acmeId), eq(teams.slug, "partnerships"))))[0].id;
   
